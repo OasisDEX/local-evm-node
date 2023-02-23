@@ -100,5 +100,15 @@ dist
 # DynamoDB Local files
 .dynamodb/
 
-# TernJS port file
-.tern-port
+.env_bak
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+
+# JetBrains files
+.idea
+
