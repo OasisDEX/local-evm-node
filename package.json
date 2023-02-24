@@ -4,8 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "update-block": "ts-node update-block-number.ts",
-    "start": "yarn update-block && npx hardhat node --network hardhat"
+    "update-block": "npx ts-node update-block-number.ts",
+    "start": "yarn update-block && npx hardhat node --network hardhat",
+    "run-node": "npx hardhat node --network hardhat --max-memory 8192"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",

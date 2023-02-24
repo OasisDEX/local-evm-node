@@ -1,51 +1,57 @@
 import fetch from 'node-fetch'
-import fs from "fs";
-
-import path from "path";
+import { existsSync, writeFileSync, readFileSync } from 'fs';
+import process from "process";
 
 const mainnetInfoUrl = 'https://blockexplorer.one/ajax/eth/mainnet/info'
-const envFile = `${path.join(__dirname)}/.env`
-const envFileBackup = `${path.join(__dirname)}/.env_bak`
+const envFile = `${process.cwd()}/.env`
 const newLine = '\n'
 const blockNumberOffset = -10
 
-const updateNumber = () => {
-    fetch(mainnetInfoUrl)
-        .then(res => res.json() as Promise<{ height: number}>)
-        .then((res: { height: number }) => {
-            console.log('')
-            if (!res.height) {
-                console.error('❌ Block height not found', res)
-                return
-            }
-            if (!fs.existsSync(envFile)) {
-                console.error(`❌ .env file not found (${envFile})`)
-                return
-            }
-            if (!fs.existsSync(envFileBackup)) {
-                fs.copyFile(envFile, envFileBackup, () => {
-                    console.log('✨ Made an .env backup at', envFileBackup)
-                })
-            }
-            const blockHeight = res.height
-            console.log('😊 Found block height:', blockHeight)
-            const envFileContents = fs.readFileSync(envFile, 'utf8')
-            const envFileContentLines = envFileContents.split(newLine)
-            const filteredEnvFileContentLines = envFileContentLines.map((line: string) => {
-                    return line.startsWith('BLOCK_NUMBER') ? `BLOCK_NUMBER=${blockHeight + blockNumberOffset}` : line;
-                },
-            )
-            try {
-                fs.writeFileSync(envFile, filteredEnvFileContentLines.join(newLine))
-                console.log(
-                    '🙌 Updated the block number with',
-                    blockHeight + blockNumberOffset,
-                    `(latest block minus ${blockNumberOffset})`,
-                )
-            } catch (error) {
-                console.error(`❌ Could not update the block number (${error})`)
-            }
-            console.log('')
-        })
+const updateNumber = async () => {
+    const response = await fetch(mainnetInfoUrl)
+    const { height }: { height: number } = await response.json()
+    if (!height) {
+        console.error('❌ Block height not found')
+        return
+    } else {
+        console.log('😊 Found block height:', height)
+    }
+
+    process.env.BLOCK_NUMBER = `${height + blockNumberOffset}`
+
+    console.log(
+        '🙌 Updated the block number with',
+        height + blockNumberOffset,
+        `(latest block minus ${blockNumberOffset})`,
+    )
+
+    if (!existsSync(envFile)) {
+        console.log(`✨ Creating .env file at ${envFile}`)
+        writeFileSync(envFile, '', { flag: 'w' })
+    }
+
+
+    const envFileContents = readFileSync(envFile, 'utf8')
+    const envFileContentLines = envFileContents
+        .split(newLine)
+        .filter((line: string) => !line.startsWith('BLOCK_NUMBER'))
+    envFileContentLines.push(`BLOCK_NUMBER=${height + blockNumberOffset}`)
+
+    writeFileSync(envFile, envFileContentLines.join(newLine))
+
+
+    try {
+        writeFileSync(envFile, envFileContentLines.join(newLine))
+
+        console.log(
+            '🙌 Updated the block number with',
+            height + blockNumberOffset,
+            `(latest block minus ${blockNumberOffset})`,
+        )
+
+    } catch (error) {
+        console.error(`❌ Could not update the block number (${error})`)
+    }
+    console.log('')
 }
 updateNumber()

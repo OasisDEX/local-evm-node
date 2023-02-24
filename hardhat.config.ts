@@ -2,9 +2,11 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import process from "process";
 import * as dotenv from 'dotenv'
-dotenv.config()
 
-const blockNumber = process.env.BLOCK_NUMBER || "13300000";
+
+dotenv.config({ path: `${process.cwd()}/.env`})
+
+const blockNumber = process.env.BLOCK_NUMBER!;
 
 const config: HardhatUserConfig = {
   solidity: "0.8.17",

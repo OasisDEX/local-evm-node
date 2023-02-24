@@ -1,13 +1,33 @@
-# Sample Hardhat Project
+# Local Node Project
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project use Hardhat to run local Ethereum node.
 
-Try running some of the following tasks:
+## Docker setup
+### Requirements
+- Docker
+- Git
+
+### Setup
+1. Clone this repository
+2. Run 
+```shell
+docker build -t local-node . &&  docker run -e MAINNET_URL={MAINNET_URL} -p 8545:8545 -i -t --name hardhat local-node`
+```
+For `MAINNET_URL` you can use Infura, Alchemy or Tenderly. 
+
+## Local setup
+
+Please add `.env` file to the root directory with the following content:
+
+```text
+BLOCK_NUMBER=1
+MAINNET_URL={YOUR_MAINNET_URL}
+```
+For `MAINNET_URL` you can use Infura, Alchemy or Tenderly.
+
+Then run the following commands:
 
 ```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
+yarn 
+yarn run start
 ```
