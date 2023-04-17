@@ -7,11 +7,15 @@ This project use Hardhat to run local Ethereum node.
 - Docker
 - Git
 
+> [!NOTE]
+> If you run it before, please remove the old container with `docker rm hardhat`
+
 ### Setup
 1. Clone this repository
+
 2. Run 
 ```shell
-docker build -t local-node . &&  docker run -e MAINNET_URL={MAINNET_URL} -p 8545:8545 -i -t --name hardhat local-node`
+docker build -t local-node . &&  docker run -e MAINNET_URL={MAINNET_URL} -p 8545:8545 -i -t --name hardhat --rm local-node`
 ```
 For `MAINNET_URL` you can use Infura, Alchemy or Tenderly. 
 
