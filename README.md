@@ -7,7 +7,6 @@ This project use Hardhat to run local Ethereum node.
 - Docker
 - Git
 
-> [!NOTE]
 > If you run it before, please remove the old container with `docker rm hardhat`
 
 ### Setup
