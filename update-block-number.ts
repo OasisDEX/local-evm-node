@@ -1,29 +1,28 @@
 import fetch from "node-fetch";
 import { existsSync, writeFileSync, readFileSync } from "fs";
 import process from "process";
+import { ethers } from "ethers";
 
-const mainnetInfoUrl = "https://blockexplorer.one/ajax/eth/mainnet/info";
 const envFile = `${process.cwd()}/.env`;
 const newLine = "\n";
-const blockNumberOffset = -10;
+const blockNumberOffset = 10;
 
 const updateNumber = async () => {
-  const response = await fetch(mainnetInfoUrl);
-  const { height }: { height: number } = await response.json();
-  if (!height) {
+  const rpcUrl = process.env.MAINNET_URL!;
+
+  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+  const currentBlockNumber = await provider.getBlockNumber();
+  const forkingBlockNumber = currentBlockNumber - blockNumberOffset;
+  if (!currentBlockNumber) {
     console.error("❌ Block height not found");
     return;
   } else {
-    console.log("😊 Found block height:", height);
+    console.log("😊 Found block height:", currentBlockNumber);
   }
 
-  process.env.BLOCK_NUMBER = `${height + blockNumberOffset}`;
+  process.env.BLOCK_NUMBER = `${forkingBlockNumber}`;
 
-  console.log(
-    "🙌 Updated the block number with",
-    height + blockNumberOffset,
-    `(latest block minus ${blockNumberOffset})`
-  );
+  console.log(`🙌 Updated the block number with ${forkingBlockNumber}`);
 
   if (!existsSync(envFile)) {
     console.log(`✨ Creating .env file at ${envFile}`);
@@ -34,14 +33,14 @@ const updateNumber = async () => {
   const envFileContentLines = envFileContents
     .split(newLine)
     .filter((line: string) => !line.startsWith("BLOCK_NUMBER"));
-  envFileContentLines.push(`BLOCK_NUMBER=${height + blockNumberOffset}`);
+  envFileContentLines.push(`BLOCK_NUMBER=${forkingBlockNumber}`);
 
   writeFileSync(envFile, envFileContentLines.join(newLine));
 
   try {
     writeFileSync(envFile, envFileContentLines.join(newLine));
 
-    console.log("Saved succesfully! 🎉");
+    console.log(`🙌 Updated the block number with ${forkingBlockNumber}`);
   } catch (error) {
     console.error(`❌ Could not update the block number (${error})`);
   }
