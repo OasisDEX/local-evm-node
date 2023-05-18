@@ -1,50 +1,52 @@
-import fetch from "node-fetch";
-import { existsSync, writeFileSync, readFileSync } from "fs";
+import fetch from 'node-fetch'
+import { existsSync, writeFileSync, readFileSync } from 'fs';
 import process from "process";
+import {ethers} from "ethers";
 
-const mainnetInfoUrl = "https://blockexplorer.one/ajax/eth/mainnet/info";
-const envFile = `${process.cwd()}/.env`;
-const newLine = "\n";
-const blockNumberOffset = -10;
+const envFile = `${process.cwd()}/.env`
+const newLine = '\n'
+const blockNumberOffset = 10
 
 const updateNumber = async () => {
-  const response = await fetch(mainnetInfoUrl);
-  const { height }: { height: number } = await response.json();
-  if (!height) {
-    console.error("❌ Block height not found");
-    return;
-  } else {
-    console.log("😊 Found block height:", height);
-  }
+    const rpcUrl = process.env.MAINNET_URL!
 
-  process.env.BLOCK_NUMBER = `${height + blockNumberOffset}`;
+    const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+    const currentBlockNumber = await provider.getBlockNumber()
+    const forkingBlockNumber = currentBlockNumber - blockNumberOffset
+    if (!currentBlockNumber) {
+        console.error('❌ Block height not found')
+        return
+    } else {
+        console.log('😊 Found block height:', currentBlockNumber)
+    }
 
-  console.log(
-    "🙌 Updated the block number with",
-    height + blockNumberOffset,
-    `(latest block minus ${blockNumberOffset})`
-  );
+    process.env.BLOCK_NUMBER = `${forkingBlockNumber}`
 
-  if (!existsSync(envFile)) {
-    console.log(`✨ Creating .env file at ${envFile}`);
-    writeFileSync(envFile, "", { flag: "w" });
-  }
+    console.log(`🙌 Updated the block number with ${forkingBlockNumber}`)
 
-  const envFileContents = readFileSync(envFile, "utf8");
-  const envFileContentLines = envFileContents
-    .split(newLine)
-    .filter((line: string) => !line.startsWith("BLOCK_NUMBER"));
-  envFileContentLines.push(`BLOCK_NUMBER=${height + blockNumberOffset}`);
+    if (!existsSync(envFile)) {
+        console.log(`✨ Creating .env file at ${envFile}`)
+        writeFileSync(envFile, '', { flag: 'w' })
+    }
 
-  writeFileSync(envFile, envFileContentLines.join(newLine));
 
-  try {
-    writeFileSync(envFile, envFileContentLines.join(newLine));
+    const envFileContents = readFileSync(envFile, 'utf8')
+    const envFileContentLines = envFileContents
+        .split(newLine)
+        .filter((line: string) => !line.startsWith('BLOCK_NUMBER'))
+    envFileContentLines.push(`BLOCK_NUMBER=${forkingBlockNumber}`)
 
-    console.log("Saved succesfully! 🎉");
-  } catch (error) {
-    console.error(`❌ Could not update the block number (${error})`);
-  }
-  console.log("");
-};
-updateNumber();
+    writeFileSync(envFile, envFileContentLines.join(newLine))
+
+
+    try {
+        writeFileSync(envFile, envFileContentLines.join(newLine))
+
+        console.log(`🙌 Updated the block number with ${forkingBlockNumber}`)
+
+    } catch (error) {
+        console.error(`❌ Could not update the block number (${error})`)
+    }
+    console.log('')
+}
+updateNumber()
